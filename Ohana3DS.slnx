@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="OhanaCore\OhanaCore.csproj" />
+  <Project Path="OhanaNext\OhanaNext.csproj" Type="Classic C#" />
+</Solution>
