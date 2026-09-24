@@ -1,4 +1,5 @@
 ﻿using Ohana.Core.Plugins;
+using OhanaNext.Views;
 
 namespace OhanaNext;
 
@@ -11,7 +12,13 @@ public class Program
         app.InitializeComponent();
 
         var pluginLoader = new PluginLoader();
-        var plugins = pluginLoader.LoadFromDirectory("./").ToArray();
+        var pluginRegistry = new PluginRegistry();
+        var plugins = pluginLoader.LoadFromDirectory("./Plugins");
+
+        foreach (var plugin in plugins)
+        {
+            plugin.Register(pluginRegistry);
+        }
 
         var window = new MainWindow();
         app.Run(window);

@@ -1,5 +1,5 @@
 <Solution>
   <Project Path="Ohana.Core\Ohana.Core.csproj" />
-  <Project Path="Ohana.Plugins/Ohana.Plugins.csproj" Id="499d9f4e-5a25-48c9-a827-95e0ec5e6dfd" />
+  <Project Path="Ohana.Plugins/Ohana.Plugins.CGFX.csproj" Id="499d9f4e-5a25-48c9-a827-95e0ec5e6dfd" />
   <Project Path="OhanaNext\OhanaNext.csproj" />
 </Solution>

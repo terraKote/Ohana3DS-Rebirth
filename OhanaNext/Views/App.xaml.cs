@@ -1,8 +1,6 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
+﻿using System.Windows;
 
-namespace OhanaNext;
+namespace OhanaNext.Views;
 
 /// <summary>
 /// Interaction logic for App.xaml
