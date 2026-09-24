@@ -10,7 +10,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OhanaCore\OhanaCore.csproj" />
+      <ProjectReference Include="..\Ohana.Core\Ohana.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ApplicationDefinition Remove="App.xaml" />
+      <Page Include="App.xaml" />
     </ItemGroup>
 
 </Project>
