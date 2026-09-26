@@ -25,7 +25,9 @@ public partial class App
         }
 
         var applicationService = new ApplicationService();
-        var mainWindowViewModel = new MainWindowViewModel(applicationService);
+        var filePickerService = new FIlePickerService();
+        
+        var mainWindowViewModel = new MainWindowViewModel(applicationService, filePickerService, pluginRegistry);
         var window = new MainWindow(mainWindowViewModel);
         window.Show();
     }
