@@ -8,7 +8,7 @@ public interface IFilePickerService
     string? PickFile(IReadOnlyList<FileFormatDescriptor> formats);
 }
 
-public class FIlePickerService : IFilePickerService
+public class FilePickerService : IFilePickerService
 {
     public string? PickFile(IReadOnlyList<FileFormatDescriptor> formats)
     {
