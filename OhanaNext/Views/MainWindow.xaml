@@ -5,8 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OhanaNext"
         mc:Ignorable="d"
+        xmlns:vm="clr-namespace:OhanaNext.ViewModels"
+        d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
         Title="{x:Static local:AppConstants.AppName}" Height="450" Width="800">
     <Grid>
-
+        <Menu>
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open" Command="{Binding OpenCommand}" />
+                <MenuItem Header="_Exit" Command="{Binding ExitCommand}" />
+            </MenuItem>
+        </Menu>
     </Grid>
 </Window>

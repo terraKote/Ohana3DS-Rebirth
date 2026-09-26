@@ -1,14 +1,16 @@
 ﻿using System.Windows;
+using OhanaNext.ViewModels;
 
 namespace OhanaNext.Views;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow
 {
-    public MainWindow()
+    public MainWindow(MainWindowViewModel viewModel)
     {
         InitializeComponent();
+        DataContext = viewModel;
     }
 }
