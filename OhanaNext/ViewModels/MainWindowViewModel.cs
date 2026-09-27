@@ -35,7 +35,7 @@ namespace OhanaNext.ViewModels
                 return;
 
             using var stream = File.OpenRead(path);
-            IFileImporter selectedImporter = null;
+            IFileImporter? selectedImporter = null;
 
             foreach (var importer in importers)
             {

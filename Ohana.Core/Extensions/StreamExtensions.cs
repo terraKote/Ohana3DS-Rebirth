@@ -10,6 +10,23 @@ public static class StreamExtensions
         return Encoding.ASCII.GetString(buffer);
     }
 
+    public static string ReadNullTerminatedString(this Stream stream, byte[] buffer)
+    {
+       using var memoryStream = new MemoryStream();
+
+       while (true)
+       {
+           var currentByte = (byte)stream.ReadByte();
+           
+           if(currentByte == 0)
+               break;
+           
+           memoryStream.WriteByte(currentByte);
+       }
+       
+       return Encoding.ASCII.GetString(memoryStream.ToArray());
+    }
+
     public static int ReadInt32(this Stream stream, byte[] buffer)
     {
         stream.ReadExactly(buffer, 0, sizeof(int));

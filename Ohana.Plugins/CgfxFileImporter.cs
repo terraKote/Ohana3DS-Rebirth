@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Ohana.Core.Assets;
+﻿using Ohana.Core.Assets;
 using Ohana.Core.Extensions;
 using Ohana.Core.FileFormats;
 
@@ -7,16 +6,20 @@ namespace Ohana.Plugins.CGFX;
 
 public class CgfxFileImporter : IFileImporter
 {
-    private const uint BUFFER_SIZE = 4;
+    private const uint BINARY_BUFFER_SIZE = 4;
+    private const uint ASSET_BUFFER_SIZE = 8192;
+    private const uint STRING_BUFFER_SIZE = 32;
+    
     private const string FILE_HEADER_MAGIC = "CGFX";
     private const string DATA_HEADER_MAGIC = "DATA";
     private const string DICTIONARY_HEADER_MAGIC = "DICT";
+    private const string TEXTURE_OBJECT_HEADER_MAGIC = "TXOB";
 
     public FileFormatDescriptor FormatDescriptor => new("CGFX", [".fs", ".bcres"]);
 
     public bool CanImport(Stream stream)
     {
-        var buffer = new byte[BUFFER_SIZE];
+        var buffer = new byte[BINARY_BUFFER_SIZE];
         var fileHeader = ReadFileHeader(stream, buffer);
         return string.Equals(fileHeader.Magic, FILE_HEADER_MAGIC, StringComparison.Ordinal) &&
                fileHeader.Length == stream.Position;
@@ -24,8 +27,8 @@ public class CgfxFileImporter : IFileImporter
 
     public IAsset Import(Stream stream)
     {
-        var buffer = new byte[BUFFER_SIZE];
-        var fileHeader = ReadFileHeader(stream, buffer);
+        var binaryBuffer = new byte[BINARY_BUFFER_SIZE];
+        var fileHeader = ReadFileHeader(stream, binaryBuffer);
 
         if (stream.Position != fileHeader.Length)
         {
@@ -33,9 +36,38 @@ public class CgfxFileImporter : IFileImporter
         }
 
         stream.Position = fileHeader.Length;
-        var dataTable = ReadDataTable(stream, buffer);
+        var dataTable = ReadDataTable(stream, binaryBuffer);
+        
+        var archiveAsset = new ArchiveAsset();
+        var assetBuffer = new byte[ASSET_BUFFER_SIZE];
+        var stringBuffer = new byte[STRING_BUFFER_SIZE];
+        
+        if (dataTable.Textures.Count > 0)
+        {
+            var textures = ReadTextures(stream, binaryBuffer, assetBuffer, stringBuffer, dataTable.Textures);
+            archiveAsset.AddChildAssets(textures);
+        }
+        
+        return archiveAsset;
+    }
 
-        return null;
+    private static TextureAsset[] ReadTextures(Stream stream, byte[] binaryBuffer, byte[] assetBuffer,
+        byte[] stringBuffer,
+        IReadOnlyList<DictionaryDataEntry> textureEntries)
+    {
+        var textures = new TextureAsset[textureEntries.Count];
+
+        for (int i = 0; i < textures.Length; i++)
+        {
+            stream.Seek(textureEntries[i].DataOffset, SeekOrigin.Begin);
+            
+            var type = stream.ReadUInt32(binaryBuffer);
+            var magic = stream.ReadString(TEXTURE_OBJECT_HEADER_MAGIC.Length, binaryBuffer);
+            var revision = stream.ReadUInt32(binaryBuffer);
+            // TODO: implement texture name reading
+        }
+        
+        return textures;
     }
 
     private static FileHeader ReadFileHeader(Stream stream, byte[] buffer)
@@ -121,7 +153,7 @@ public class CgfxFileImporter : IFileImporter
         return offset;
     }
 
-    private static IReadOnlyList<DictionaryDataEntry> GetDictionaryDataEntrySection(Stream stream, byte[] buffer,
+    private static DictionaryDataEntry[] GetDictionaryDataEntrySection(Stream stream, byte[] buffer,
         uint relativeOffset)
     {
         stream.Seek(relativeOffset, SeekOrigin.Begin);
