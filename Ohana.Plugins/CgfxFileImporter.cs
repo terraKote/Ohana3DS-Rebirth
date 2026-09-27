@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Ohana.Core.Assets;
+using Ohana.Core.Extensions;
 using Ohana.Core.FileFormats;
 
 namespace Ohana.Plugins.CGFX;
@@ -39,37 +40,24 @@ public class CgfxFileImporter : IFileImporter
 
     private static FileHeader ReadFileHeader(Stream stream, byte[] buffer)
     {
-        stream.ReadExactly(buffer, 0, FILE_HEADER_MAGIC.Length);
-        var magicString = Encoding.ASCII.GetString(buffer);
-
-        stream.ReadExactly(buffer, 0, sizeof(ushort));
-        var endianness = BitConverter.ToUInt16(buffer, 0);
-
-        stream.ReadExactly(buffer, 0, sizeof(ushort));
-        var length = BitConverter.ToUInt16(buffer, 0);
-
-        stream.ReadExactly(buffer, 0, sizeof(uint));
-        var revision = BitConverter.ToUInt32(buffer, 0);
-
-        stream.ReadExactly(buffer, 0, sizeof(uint));
-        var fileLength = BitConverter.ToUInt32(buffer, 0);
-
-        stream.ReadExactly(buffer, 0, sizeof(uint));
-        var entryCount = BitConverter.ToUInt32(buffer, 0);
+        var magicString = stream.ReadString(FILE_HEADER_MAGIC.Length, buffer);
+        var endianness = stream.ReadUInt16(buffer);
+        var length = stream.ReadUInt16(buffer);
+        var revision = stream.ReadUInt32(buffer);
+        var fileLength = stream.ReadUInt32(buffer);
+        var entryCount = stream.ReadUInt32(buffer);
 
         return new FileHeader(magicString, endianness, length, revision, fileLength, entryCount);
     }
 
     private DataTable ReadDataTable(Stream stream, byte[] buffer)
     {
-        stream.ReadExactly(buffer, 0, DATA_HEADER_MAGIC.Length);
-        var magicString = Encoding.ASCII.GetString(buffer);
+        var magicString = stream.ReadString(DATA_HEADER_MAGIC.Length, buffer);
 
-        if (!string.Equals(magicString, DICTIONARY_HEADER_MAGIC, StringComparison.Ordinal))
+        if (!string.Equals(magicString, DATA_HEADER_MAGIC, StringComparison.Ordinal))
             throw new Exception("Invalid dictionary header");
 
-        stream.ReadExactly(buffer, 0, sizeof(int));
-        var length = BitConverter.ToInt32(buffer);
+        var length = stream.ReadInt32(buffer);
 
         var modelDictionaryDataEntries = GetDictionaryDataEntry(stream, buffer);
         var textureDictionaryDataEntries = GetDictionaryDataEntry(stream, buffer);
@@ -107,8 +95,7 @@ public class CgfxFileImporter : IFileImporter
 
     private static IReadOnlyList<DictionaryDataEntry> GetDictionaryDataEntry(Stream stream, byte[] buffer)
     {
-        stream.ReadExactly(buffer, 0, sizeof(uint));
-        var entryCount = BitConverter.ToUInt32(buffer, 0);
+        var entryCount = stream.ReadUInt32(buffer);
         var relativeOffset = GetDictionaryDataEntryRelativeOffset(stream, buffer);
 
         if (entryCount == 0)
@@ -124,8 +111,7 @@ public class CgfxFileImporter : IFileImporter
     private static uint GetDictionaryDataEntryRelativeOffset(Stream stream, byte[] buffer)
     {
         var position = (uint)stream.Position;
-        stream.ReadExactly(buffer, 0, sizeof(uint));
-        var offset = BitConverter.ToUInt32(buffer);
+        var offset = stream.ReadUInt32(buffer);
 
         if (offset != 0)
         {
@@ -140,42 +126,22 @@ public class CgfxFileImporter : IFileImporter
     {
         stream.Seek(relativeOffset, SeekOrigin.Begin);
 
-        stream.ReadExactly(buffer, 0, DICTIONARY_HEADER_MAGIC.Length);
-        var magic = Encoding.ASCII.GetString(buffer);
-
-        stream.ReadExactly(buffer, 0, sizeof(uint));
-        var length = BitConverter.ToUInt32(buffer);
-
-        stream.ReadExactly(buffer, 0, sizeof(uint));
-        var entryCount = BitConverter.ToUInt32(buffer);
-
-        stream.ReadExactly(buffer, 0, sizeof(int));
-        var rootNodeReference = BitConverter.ToInt32(buffer);
-
-        stream.ReadExactly(buffer, 0, sizeof(ushort));
-        var rootNodeLeft = BitConverter.ToUInt16(buffer);
-
-        stream.ReadExactly(buffer, 0, sizeof(ushort));
-        var rootNodeRight = BitConverter.ToUInt16(buffer);
-
-        stream.ReadExactly(buffer, 0, sizeof(uint));
-        var rootNodeNameOffset = BitConverter.ToUInt32(buffer);
-
-        stream.ReadExactly(buffer, 0, sizeof(uint));
-        var rootNodeNameDataOffset = BitConverter.ToUInt32(buffer);
+        var magic = stream.ReadString(DICTIONARY_HEADER_MAGIC.Length, buffer);
+        var length = stream.ReadUInt32(buffer);
+        var entryCount = stream.ReadUInt32(buffer);
+        var rootNodeReference = stream.ReadInt32(buffer);
+        var rootNodeLeft = stream.ReadUInt16(buffer);
+        var rootNodeRight = stream.ReadUInt16(buffer);
+        var rootNodeNameOffset = stream.ReadUInt32(buffer);
+        var rootNodeNameDataOffset = stream.ReadUInt32(buffer);
 
         var entries = new DictionaryDataEntry[entryCount];
 
         for (int i = 0; i < entryCount; i++)
         {
-            stream.ReadExactly(buffer, 0, sizeof(int));
-            var referenceBit = BitConverter.ToInt32(buffer);
-
-            stream.ReadExactly(buffer, 0, sizeof(ushort));
-            var nodeLeft = BitConverter.ToUInt16(buffer);
-
-            stream.ReadExactly(buffer, 0, sizeof(ushort));
-            var nodeRight = BitConverter.ToUInt16(buffer);
+            var referenceBit = stream.ReadInt32(buffer);
+            var nodeLeft = stream.ReadUInt16(buffer);
+            var nodeRight = stream.ReadUInt16(buffer);
 
             var nameOffset = GetDictionaryDataEntryRelativeOffset(stream, buffer);
             var dataOffset = GetDictionaryDataEntryRelativeOffset(stream, buffer);
